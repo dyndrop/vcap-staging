@@ -1,1 +1,24 @@
 #!/usr/bin/env ruby
+
+base_dir = ARGV[0]
+vcap_services = ARGV[1]
+exit 1 unless base_dir && vcap_services
+
+require 'fileutils'
+require 'rubygems'
+require 'json'
+
+# Harcoded shared FS handling for Drupal.
+# Crappy code while we wait for the DEA/Stager V2.
+vcap_services = JSON.parse(vcap_services)
+if !vcap_services["filesystem-1.0"].first.nil? then
+        filesystem_service_directory = vcap_services["filesystem-1.0"].first["credentials"]["internal"]["name"]
+        exit 1 if filesystem_service_directory.nil?
+
+        shared_nfs_path = "/var/vcap/services/filesystem/backends/backend1/" + filesystem_service_directory
+        files_path = "app/sites/default/files"
+
+        FileUtils.rm_r(files_path) if File.directory?(files_path)
+        FileUtils.mkdir_p "app/sites/default"
+        FileUtils.symlink(shared_nfs_path, files_path)
+end
