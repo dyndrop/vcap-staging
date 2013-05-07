@@ -11,7 +11,7 @@ require 'json'
 # Harcoded shared FS handling for Drupal.
 # Crappy code while we wait for the DEA/Stager V2.
 vcap_services = JSON.parse(vcap_services)
-if !vcap_services["filesystem-1.0"].first.nil? then
+if !vcap_services["filesystem-1.0"].nil? then
         filesystem_service_directory = vcap_services["filesystem-1.0"].first["credentials"]["internal"]["name"]
         exit 1 if filesystem_service_directory.nil?
 

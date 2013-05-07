@@ -12,8 +12,18 @@ class PhpPlugin < StagingPlugin
       Apache.prepare(destination_directory)
       system "cp -a #{File.join(resource_dir, "conf.d", "*")} apache/php"
       copy_source_files
+      # TODO: On CFv2, make a proper separate "drupal" staging plugin
+      configure_source_files_for_drupal
       create_startup_script
       create_stop_script
+    end
+  end
+
+  # TODO: On CFv2, make a proper separate "drupal" staging plugin
+  def configure_source_files_for_drupal
+    to_append = File.read(File.join(resource_dir, "drupal_settings.php"))
+    File.open("app/sites/default/settings.php", "a") do |handle|
+      handle.puts to_append
     end
   end
 
