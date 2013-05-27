@@ -21,9 +21,11 @@ class PhpPlugin < StagingPlugin
 
   # TODO: On CFv2, make a proper separate "drupal" staging plugin
   def configure_source_files_for_drupal
-    to_append = File.read(File.join(resource_dir, "drupal_settings.php"))
-    File.open("app/sites/default/settings.php", "a") do |handle|
-      handle.puts to_append
+    if File.exists?("app/sites/default/settings.php") then
+      to_append = File.read(File.join(resource_dir, "drupal_settings.php"))
+      File.open("app/sites/default/settings.php", "a") do |handle|
+        handle.puts to_append
+      end
     end
   end
 
@@ -53,8 +55,8 @@ class PhpPlugin < StagingPlugin
       <<-PHPEOF
 env > env.log
 ruby resources/generate_apache_conf $VCAP_APP_PORT $HOME $VCAP_SERVICES #{application_memory}m
-/var/vcap/packages/ruby/bin/ruby resources/integrate_filesystem_service $HOME $VCAP_SERVICES
       PHPEOF
+    # /var/vcap/packages/ruby/bin/ruby resources/integrate_filesystem_service $HOME $VCAP_SERVICES
     end
   end
 
