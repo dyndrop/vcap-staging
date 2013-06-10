@@ -7,8 +7,9 @@ exit 1 unless base_dir && vcap_services
 require 'fileutils'
 require 'rubygems'
 require 'json'
+require 'yaml'
 
-# Harcoded shared FS handling for Drupal.
+# Harcoded shared FS handling
 # Crappy code while we wait for the DEA/Stager V2.
 vcap_services = JSON.parse(vcap_services)
 if !vcap_services["filesystem-1.0"].nil? then
@@ -16,9 +17,30 @@ if !vcap_services["filesystem-1.0"].nil? then
         exit 1 if filesystem_service_directory.nil?
 
         shared_nfs_path = "/var/vcap/services/filesystem/backends/backend1/" + filesystem_service_directory
-        files_path = "app/sites/default/files"
+
+        # Detecting where to put the files
+        files_path = nil
+        # Detecting Drupal
+        if(File.directory?("app/sites/default")) then
+                files_path = "sites/default/files"
+        end
+        # Loading the dyndrop.conf
+        if(File.exists?("app/dyndrop.conf")) then
+                conf = YAML.load_file("app/dyndrop.conf")
+
+                if conf.nil? == false and conf["filesystem"].nil? == false and conf["filesystem"][0].nil? == false then
+                        files_path = conf["filesystem"][0]
+                end
+        end
+
+        exit 0 if files_path.nil?
+        # Check that path does not go outside the folder. To be done better.
+        exit 0 if /^[a-zA-Z0-9\/\-_ ]+$/.match(files_path).nil?
+
+        files_path = "app/" + files_path
+        files_parent = File.expand_path("..", files_path)
 
         FileUtils.rm_r(files_path) if File.directory?(files_path)
-        FileUtils.mkdir_p "app/sites/default"
+        FileUtils.mkdir_p files_parent
         FileUtils.symlink(shared_nfs_path, files_path)
 end

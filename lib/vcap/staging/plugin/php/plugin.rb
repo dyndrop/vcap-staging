@@ -55,8 +55,8 @@ class PhpPlugin < StagingPlugin
       <<-PHPEOF
 env > env.log
 ruby resources/generate_apache_conf $VCAP_APP_PORT $HOME $VCAP_SERVICES #{application_memory}m
+/var/vcap/packages/ruby/bin/ruby resources/integrate_filesystem_service $HOME $VCAP_SERVICES
       PHPEOF
-    # /var/vcap/packages/ruby/bin/ruby resources/integrate_filesystem_service $HOME $VCAP_SERVICES
     end
   end
 
