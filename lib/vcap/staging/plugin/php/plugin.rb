@@ -21,9 +21,14 @@ class PhpPlugin < StagingPlugin
 
   # TODO: On CFv2, make a proper separate "drupal" staging plugin
   def configure_source_files_for_drupal
+    to_append = File.read(File.join(resource_dir, "drupal_settings.php"))
     if File.exists?("app/sites/default/settings.php") then
-      to_append = File.read(File.join(resource_dir, "drupal_settings.php"))
       File.open("app/sites/default/settings.php", "a") do |handle|
+        handle.puts to_append
+      end
+    elsif File.directory?("app/sites/default") then
+      File.open("app/sites/default/settings.php", "w") do |handle|
+        handle.puts "<?php \n\n"
         handle.puts to_append
       end
     end
